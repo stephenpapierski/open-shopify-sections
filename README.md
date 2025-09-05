@@ -43,4 +43,6 @@ MIT License — free to use, free to modify, free to share.
 ---
 
 ## 🙌 Credits
-Created by [Stephen Papierski](https://github.com/stephenpapierski).  
+Created by [Stephen Papierski](https://github.com/stephenpapierski). If you find this project helpful, consider supporting!
+
+<a href="https://www.buymeacoffee.com/stephenpapierski" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41"></a>

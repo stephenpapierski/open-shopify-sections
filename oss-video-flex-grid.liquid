@@ -1,0 +1,253 @@
+{% comment %}
+  =========================================================
+  Section: OSS - Video Flex Grid
+  Repository: github.com/stephenpapierski/open-shopify-sections
+  Version: 2025.9.0
+  Author: Stephen Papierski
+  License: MIT (see LICENSE file for details)
+  Description: Flexible video flex grid section for Shopify.
+  =========================================================
+{% endcomment %}
+
+{%- liquid
+  if section.settings.videos_same_width
+    assign flex_grow = 0
+  else
+    assign flex_grow = 1
+  endif
+
+  assign desktop_width = 'calc((100% / var(--cols, ' | append: section.settings.max_desktop_columns | append: ')) - 20px)'
+  assign mobile_width = 'calc((100% / var(--cols, ' | append: section.settings.max_mobile_columns | append: ')) - 20px)'
+-%}
+
+{%- style -%}
+  .oss-video-grid-{{ section.id }} {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: {{  section.settings.video_alignment}}; /* adjust video-alignment */
+  }
+
+  .oss-video-{{ section.id }} {
+    flex: {{ flex_grow }} 1 {{ desktop_width }}; /* adjust desktop-columns */
+    aspect-ratio: 16 / 9;
+  }
+
+  .oss-video-{{ section.id }} iframe {
+    width: 100%;
+    height: 100%;
+  }
+
+  @media (max-width: 750px) {
+    .oss-video-{{ section.id }} {
+      flex: {{  flex_grow }} 1 {{ mobile_width }}; /* adjust mobile-columns */
+    }
+  }
+
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="section-{{ section.id }}-padding page-width color-{{ section.settings.color_scheme }} gradient">
+  {%- unless section.settings.heading == blank -%}
+    <div class="title-wrapper title-wrapper--no-top-margin{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+      <h2 class="title inline-richtext {{ section.settings.heading_size }}">{{ section.settings.heading }}</h2>
+    </div>
+  {%- endunless -%}
+  <div class="oss-video-grid-{{ section.id }}">
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when 'heading' -%}
+          <h2
+            class="rich-text__heading rte inline-richtext {{ block.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            {{ block.shopify_attributes }}
+            {% if settings.animations_reveal_on_scroll %}
+              data-cascade
+              style="--animation-order: {{ forloop.index }};"
+            {% endif %}
+          >
+            {{ block.settings.heading }}
+          </h2>
+        {%- when 'video' -%}
+          <div class="oss-video-{{ section.id }}">
+            {% if block.settings.video_url.type == 'youtube' %}
+              <iframe
+                src="https://www.youtube.com/embed/{{ block.settings.video_url.id }}"
+                frameborder="0"
+                allow="encrypted-media"
+                allowfullscreen
+                loading="lazy"
+                title="Video"
+              >
+              </iframe>
+            {% else %}
+              <iframe
+                src="https://player.vimeo.com/video/{{ block.settings.video_url.id }}"
+                frameborder="0"
+                allow="encrypted-media"
+                allowfullscreen
+                loading="lazy"
+                title="Video"
+              >
+              </iframe>
+            {% endif %}
+          </div>
+      {%- endcase -%}
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "OSS - Video Flex Grid",
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "default": "t:sections.video.settings.heading.default",
+      "label": "t:sections.video.settings.heading.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        },
+        {
+          "value": "hxl",
+          "label": "t:sections.all.heading_size.options__4.label"
+        },
+        {
+          "value": "hxxl",
+          "label": "t:sections.all.heading_size.options__5.label"
+        }
+      ],
+      "default": "h1",
+      "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      /* Video Header */
+      "type": "header",
+      "content": "Video"
+    },
+    {
+      "type": "range",
+      "id": "max_desktop_columns",
+      "label": "Desktop Columns (Max)",
+      "default": 3,
+      "min": 1,
+      "max": 6
+    },
+    {
+      "type": "range",
+      "id": "max_mobile_columns",
+      "label": "Mobile Columns (Max)",
+      "default": 1,
+      "min": 1,
+      "max": 3
+    },
+    {
+      "type": "select",
+      "id": "video_alignment",
+      "label": "Video Alignment",
+      "default": "space-between",
+      "options": [
+        { "value": "flex-start", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "flex-end", "label": "Right" },
+        { "value": "space-between", "label": "Space Between" },
+        { "value": "space-around", "label": "Space Around" },
+        { "value": "space-evenly", "label": "Space Evenly" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "videos_same_width",
+      "label": "Make all videos same width",
+      "default": false
+    },
+    {
+      /* Padding Header */
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Video",
+      "settings": [
+        {
+          "type": "video_url",
+          "id": "video_url",
+          "label": "Video Url",
+          "accept": ["youtube", "vimeo"],
+          "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "OSS - Video Flex Grid",
+      "category": "Custom",
+      "blocks": [
+        {
+          "type": "video"
+        },
+        {
+          "type": "video"
+        },
+        {
+          "type": "video"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

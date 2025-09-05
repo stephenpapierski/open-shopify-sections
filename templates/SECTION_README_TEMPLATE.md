@@ -3,7 +3,7 @@
 {{ Screenshot }}
 
 ## Overview
-`{{ Section Name }}` is a flexible Shopify section designed to add {{ brief description of purpose or functionality }}.
+`{{ Section Name }}` is a flexible Shopify section for {{ brief description of purpose or functionality }}.
 
 ## Features
 - Feature 1
@@ -15,3 +15,6 @@
 |------------|---------|--------------------------|
 | `setting1` | `1`     | Description of setting 1 |
 | `setting2` | `2`     | Description of setting 2 |
+
+## More Views
+{{ More Screenshots }}

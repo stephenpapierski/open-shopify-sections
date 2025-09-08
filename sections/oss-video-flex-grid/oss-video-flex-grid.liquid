@@ -10,40 +10,25 @@
 {% endcomment %}
 
 {%- liquid
-  if section.settings.videos_same_width
-    assign flex_grow = 0
-  else
-    assign flex_grow = 1
-  endif
+  # get settings
+  assign desktop_columns = section.settings.desktop_columns
+  assign mobile_columns = section.settings.mobile_columns
+  assign video_spacing = section.settings.video_spacing
 
-  assign desktop_width = 'calc((100% / var(--cols, ' | append: section.settings.max_desktop_columns | append: ')) - 20px)'
-  assign mobile_width = 'calc((100% / var(--cols, ' | append: section.settings.max_mobile_columns | append: ')) - 20px)'
+  # map content alignment
+  case section.settings.content_alignment
+    when 'left'
+      assign justify_content = 'flex-start'
+    when 'center'
+      assign justify_content = 'center'
+    when 'right'
+      assign justify_content = 'flex-end'
+    else
+      assign justify_content = 'center'
+  endcase
 -%}
 
 {%- style -%}
-  .oss-video-grid-{{ section.id }} {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: {{  section.settings.video_alignment}}; /* adjust video-alignment */
-  }
-
-  .oss-video-{{ section.id }} {
-    flex: {{ flex_grow }} 1 {{ desktop_width }}; /* adjust desktop-columns */
-    aspect-ratio: 16 / 9;
-  }
-
-  .oss-video-{{ section.id }} iframe {
-    width: 100%;
-    height: 100%;
-  }
-
-  @media (max-width: 750px) {
-    .oss-video-{{ section.id }} {
-      flex: {{  flex_grow }} 1 {{ mobile_width }}; /* adjust mobile-columns */
-    }
-  }
-
   .section-{{ section.id }}-padding {
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
@@ -55,54 +40,77 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  .oss-video-grid-{{ section.id }} {
+    display: flex;
+    flex-wrap: wrap;
+    gap: {{ section.settings.video_spacing }}px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    justify-content: {{ justify_content }};
+  }
+
+  .oss-video-{{ section.id }} {
+    flex: 0 0 calc((100% - ({{ mobile_columns }} - 1) * {{ video_spacing }}px) / {{ mobile_columns }});
+    aspect-ratio: {{ section.settings.aspect_ratio }};
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .oss-video-{{ section.id }} iframe {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border: none;
+  }
+
+  @media screen and (min-width: 750px) {
+    .oss-video-{{ section.id }} {
+      flex: 0 0 calc((100% - ({{ desktop_columns }} - 1) * {{ video_spacing }}px) / {{ desktop_columns }});
+    }
+  }
 {%- endstyle -%}
 
-<div class="section-{{ section.id }}-padding page-width color-{{ section.settings.color_scheme }} gradient">
-  {%- unless section.settings.heading == blank -%}
-    <div class="title-wrapper title-wrapper--no-top-margin{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-      <h2 class="title inline-richtext {{ section.settings.heading_size }}">{{ section.settings.heading }}</h2>
-    </div>
-  {%- endunless -%}
-  <div class="oss-video-grid-{{ section.id }}">
-    {%- for block in section.blocks -%}
-      {%- case block.type -%}
-        {%- when 'heading' -%}
-          <h2
-            class="rich-text__heading rte inline-richtext {{ block.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-            {{ block.shopify_attributes }}
-            {% if settings.animations_reveal_on_scroll %}
-              data-cascade
-              style="--animation-order: {{ forloop.index }};"
-            {% endif %}
-          >
-            {{ block.settings.heading }}
-          </h2>
-        {%- when 'video' -%}
-          <div class="oss-video-{{ section.id }}">
-            {% if block.settings.video_url.type == 'youtube' %}
-              <iframe
-                src="https://www.youtube.com/embed/{{ block.settings.video_url.id }}"
-                frameborder="0"
-                allow="encrypted-media"
-                allowfullscreen
-                loading="lazy"
-                title="Video"
-              >
-              </iframe>
-            {% else %}
-              <iframe
-                src="https://player.vimeo.com/video/{{ block.settings.video_url.id }}"
-                frameborder="0"
-                allow="encrypted-media"
-                allowfullscreen
-                loading="lazy"
-                title="Video"
-              >
-              </iframe>
-            {% endif %}
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="isolate{% unless section.settings.full_width %} page-width{% endunless %}">
+    <div class="section-{{ section.id }}-padding">
+      <div class="{{ section.settings.content_alignment }}">
+        {%- unless section.settings.heading == blank -%}
+          <div class="title-wrapper title-wrapper--no-top-margin{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+            <h2 class="title inline-richtext {{ section.settings.heading_size }}">{{ section.settings.heading }}</h2>
           </div>
-      {%- endcase -%}
-    {%- endfor -%}
+        {%- endunless -%}
+        <div class="oss-video-grid-{{ section.id }}">
+          {%- for block in section.blocks -%}
+            <div class="oss-video-{{ section.id }}">
+              {% if block.settings.video_url.type == 'youtube' %}
+                <iframe
+                  src="https://www.youtube.com/embed/{{ block.settings.video_url.id }}?rel=0"
+                  frameborder="0"
+                  allow="encrypted-media"
+                  allowfullscreen
+                  loading="lazy"
+                  title="Video"
+                >
+                </iframe>
+              {% else %}
+                <iframe
+                  src="https://player.vimeo.com/video/{{ block.settings.video_url.id }}?dnt=1"
+                  frameborder="0"
+                  allow="encrypted-media"
+                  allowfullscreen
+                  loading="lazy"
+                  title="Video"
+                >
+                </iframe>
+              {% endif %}
+            </div>
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -110,6 +118,11 @@
 {
   "name": "OSS - Video Flex Grid",
   "settings": [
+    {
+      /* Content Header */
+      "type": "header",
+      "content": "Header"
+    },
     {
       "type": "inline_richtext",
       "id": "heading",
@@ -145,56 +158,46 @@
       "label": "t:sections.all.heading_size.label"
     },
     {
+      /* Style Header */
+      "type": "header",
+      "content": "Style"
+    },
+    {
       "type": "color_scheme",
       "id": "color_scheme",
       "label": "t:sections.all.colors.label",
       "default": "scheme-1"
     },
     {
-      /* Video Header */
+      /* Layout Header */
       "type": "header",
-      "content": "Video"
-    },
-    {
-      "type": "range",
-      "id": "max_desktop_columns",
-      "label": "Desktop Columns (Max)",
-      "default": 3,
-      "min": 1,
-      "max": 6
-    },
-    {
-      "type": "range",
-      "id": "max_mobile_columns",
-      "label": "Mobile Columns (Max)",
-      "default": 1,
-      "min": 1,
-      "max": 3
+      "content": "Layout"
     },
     {
       "type": "select",
-      "id": "video_alignment",
-      "label": "Video Alignment",
-      "default": "space-between",
+      "id": "content_alignment",
       "options": [
-        { "value": "flex-start", "label": "Left" },
-        { "value": "center", "label": "Center" },
-        { "value": "flex-end", "label": "Right" },
-        { "value": "space-between", "label": "Space Between" },
-        { "value": "space-around", "label": "Space Around" },
-        { "value": "space-evenly", "label": "Space Evenly" }
-      ]
+        {
+          "value": "left",
+          "label": "t:sections.rich-text.settings.content_alignment.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.rich-text.settings.content_alignment.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.rich-text.settings.content_alignment.options__3.label"
+        }
+      ],
+      "default": "center",
+      "label": "t:sections.rich-text.settings.content_alignment.label"
     },
     {
       "type": "checkbox",
-      "id": "videos_same_width",
-      "label": "Make all videos same width",
-      "default": false
-    },
-    {
-      /* Padding Header */
-      "type": "header",
-      "content": "t:sections.all.padding.section_padding_heading"
+      "id": "full_width",
+      "default": false,
+      "label": "t:sections.rich-text.settings.full_width.label"
     },
     {
       "type": "range",
@@ -203,7 +206,7 @@
       "max": 100,
       "step": 4,
       "unit": "px",
-      "label": "t:sections.all.padding.padding_top",
+      "label": "Padding Top",
       "default": 36
     },
     {
@@ -213,8 +216,63 @@
       "max": 100,
       "step": 4,
       "unit": "px",
-      "label": "t:sections.all.padding.padding_bottom",
+      "label": "Padding Bottom",
       "default": 36
+    },
+    {
+      /* Video Header */
+      "type": "header",
+      "content": "Video Grid"
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio",
+      "options": [
+        {
+          "value": "16 / 9",
+          "label": "Widescreen (16:9)"
+        },
+        {
+          "value": "9 / 16",
+          "label": "Vertical (9:16)"
+        },
+        {
+          "value": "1 / 1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "4 / 3",
+          "label": "Legacy (4:3)"
+        }
+      ],
+      "default": "16 / 9",
+      "label": "Aspect Ratio"
+    },
+    {
+      "type": "range",
+      "id": "desktop_columns",
+      "label": "Desktop Columns",
+      "default": 3,
+      "min": 1,
+      "max": 6
+    },
+    {
+      "type": "range",
+      "id": "mobile_columns",
+      "label": "Mobile Columns",
+      "default": 1,
+      "min": 1,
+      "max": 3
+    },
+    {
+      "type": "range",
+      "id": "video_spacing",
+      "label": "Video Spacing",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "default": 20
     }
   ],
   "blocks": [

@@ -32,9 +32,15 @@ Everything you need is self-contained.
 
 ## 🚀 Getting Started
 
-1. Copy the `.liquid` file from the repo into your theme’s `/sections` directory.
-2. Open the Theme Editor and add the section where you want it.
-3. Customize settings (like heading, colors, spacing, alignment, etc.) directly in the editor.
+To add a section from this repo to your Shopify store:
+
+1. Go to **Online Store → Themes** in your Shopify admin.
+2. Find the theme you want to add the section to, click the **ellipsis (…)**, and select **Edit code**.
+3. In the file sidebar, open the **Sections** folder.
+4. Click **New file…** and type in the **file name** of the `.liquid` file you are copying (e.g., `oss-video-flex-grid.liquid`).
+5. Paste the contents of the `.liquid` file from this repo into the new file and save.
+6. Open the **Theme Editor** and add your new section where you want it.
+7. Customize settings like headings, colors, spacing, alignment, and any video-specific options directly in the editor.
 
 ---
 
